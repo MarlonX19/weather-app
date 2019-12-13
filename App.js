@@ -26,10 +26,11 @@ const App = () => {
   const [location, setLocation] = useState({});
   const [summary, setSummary] = useState('');
   const [weekData, setWeekData] = useState([]);
-  const [test, setTest] = useState('');
+  const [cityName, setcityName] = useState('Minha região');
 
 
-  const geoCode = async (latitude, longitude) => {
+  //Sets latitude, longitude and city name to the whole component
+  const geoCode = async (latitude, longitude, cityName) => {
     axios.get(`${DARK_SKY_URL}/${latitude},${longitude}?lang=pt&units=si`)
       .then(function (response) {
         // handle success
@@ -38,7 +39,7 @@ const App = () => {
         let { summary } = response.data.daily;
         setSummary(summary)
         let data = response.data.daily.data;
-        console.log(data[0].icon)
+        setcityName(cityName)
         setWeekData(data)
       })
       .catch(function (error) {
@@ -64,7 +65,7 @@ const App = () => {
         Geolocation.getCurrentPosition(
           ({ coords: { latitude, longitude } }) => {
             setLocation({ 'lat': latitude, 'long': longitude })
-            geoCode(latitude, longitude)
+            geoCode(latitude, longitude, cityName)
           },
           (error) => {
             // See error code charts below.
@@ -87,10 +88,7 @@ const App = () => {
 
   }, [])
 
-  useEffect(() => {
-
-  }, [weekData])
-
+  
   const fromTimestampToDay = (timestamp) => {
     let day = fromUnixTime(timestamp)
     let res = day.toString()
@@ -101,7 +99,7 @@ const App = () => {
 
   const find = async (res) => {
     axios.get(`https://api.mapbox.com/geocoding/v5/mapbox.places/${res.description}.json?access_token=pk.eyJ1IjoibWFybG9uYmVubmV0IiwiYSI6ImNrM3o5MnY0ZDA4a3ozbHBwcDVvbGdxMzkifQ.yv0dR5O-EZe71ndYaFSTeQ&limit=1`)
-      .then(resp => { geoCode(resp.data.features[0].center[1], resp.data.features[0].center[0]) })
+      .then(resp => { geoCode(resp.data.features[0].center[1], resp.data.features[0].center[0], resp.data.features[0].text) })
       .catch(err => console.log(err))
   }
 
@@ -113,9 +111,12 @@ const App = () => {
       <SafeAreaView style={styles.container}>
       <ImageBackground source={img} style={{width: '100%', height: '100%'}}>
         <View style={styles.headerView}>
-          <Search fun={find} />
+          <Search fun={find} cityName={cityName} />
         </View>
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 2, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'flex-start' }}>
+        {weekData[0] ? <Text style={{ fontSize: 32, color: '#fff', fontFamily: 'sans-serif-light', paddingLeft: 5 }}>{weekData[0].summary} </Text> : <Text>''</Text>}
+        </View>
+        <View style={{ flex: 2 }}>
           <Text style={{ fontSize: 24, fontFamily: 'sans-serif-light', paddingLeft: 5 }}>Resumo diário</Text>
           <FlatList
             horizontal={true}
@@ -156,9 +157,6 @@ const App = () => {
             keyExtractor={item => item.time.toString()}
           />
 
-        </View>
-        <View style={{ flex: 1 }}>
-          {weekData[0] ? <Text>{weekData[0].summary} </Text> : false}
         </View>
         </ImageBackground>
       </SafeAreaView>

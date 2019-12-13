@@ -7,7 +7,7 @@ const Search = (props) => {
    const [isSearchFocused, setIsSearchFocused] = useState(false);
 
         return  <GooglePlacesAutocomplete
-                placeholder= 'Araras'
+                placeholder={props.cityName}
                 placeholderTextColor="#333"
                 onPress={(res) => props.fun(res)}
                 query={{
