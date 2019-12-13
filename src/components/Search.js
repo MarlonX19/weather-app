@@ -1,21 +1,10 @@
 import React, { useState } from 'react';
 import { View, Image } from 'react-native';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import axios from 'axios';
 
-// import { Container } from './styles';
 
 const Search = (props) => {
    const [isSearchFocused, setIsSearchFocused] = useState(false);
-
-    
-    const find = async (res) => {
-    console.log(res)
-    axios.get(`https://api.mapbox.com/geocoding/v5/mapbox.places/${res}.json?access_token=pk.eyJ1IjoibWFybG9uYmVubmV0IiwiYSI6ImNrM3o5MnY0ZDA4a3ozbHBwcDVvbGdxMzkifQ.yv0dR5O-EZe71ndYaFSTeQ&limit=1`)
-        .then(res => console.log(res.data.features[0].center))
-        .catch(err => console.log(err))
-   }
-
 
         return  <GooglePlacesAutocomplete
                 placeholder= 'Araras'
