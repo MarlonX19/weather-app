@@ -7,7 +7,8 @@ import {
   StatusBar,
   PermissionsAndroid,
   FlatList,
-  Image
+  Image,
+  ImageBackground
 } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import axios from 'axios';
@@ -17,12 +18,15 @@ import Search from './src/components/Search';
 
 
 import { DARK_SKY_URL } from './config/consts';
-
+import rainy from './assets/rainyweather.jpg'
+import sunny from './assets/sunnyweather.jpg'
+import ordinary from './assets/ordinary.jpg'
 
 const App = () => {
   const [location, setLocation] = useState({});
   const [summary, setSummary] = useState('');
   const [weekData, setWeekData] = useState([]);
+  const [test, setTest] = useState('');
 
 
   const geoCode = async (latitude, longitude) => {
@@ -34,6 +38,7 @@ const App = () => {
         let { summary } = response.data.daily;
         setSummary(summary)
         let data = response.data.daily.data;
+        console.log(data[0].icon)
         setWeekData(data)
       })
       .catch(function (error) {
@@ -84,7 +89,6 @@ const App = () => {
 
   useEffect(() => {
 
-
   }, [weekData])
 
   const fromTimestampToDay = (timestamp) => {
@@ -101,13 +105,13 @@ const App = () => {
       .catch(err => console.log(err))
   }
 
-
+  const img = weekData[0] ? weekData[0].icon === 'rain' ? rainy : sunny : ordinary
 
   return (
     <>
       <StatusBar barStyle="dark-content" />
       <SafeAreaView style={styles.container}>
-
+      <ImageBackground source={img} style={{width: '100%', height: '100%'}}>
         <View style={styles.headerView}>
           <Search fun={find} />
         </View>
@@ -118,19 +122,19 @@ const App = () => {
             showsHorizontalScrollIndicator={false}
             data={weekData}
             renderItem={({ item, index }) => (
-              <View style={{ marginHorizontal: 5, height: 120, width: 120, borderColor: '#ccc', borderWidth: 0.4, borderRadius: 5 }} >
+              <View style={{ marginHorizontal: 5, height: 120, width: 120, borderColor: '#ccc', borderWidth: 0.1, borderRadius: 5, backgroundColor: 'rgba(52, 52, 52, 0.4)' }} >
                 <View style={{ flex: 1 }}>
-                  <Text style={{ paddingLeft: 3, fontSize: 18, fontFamily: 'sans-serif-light' }}>{fromTimestampToDay(item.time)}</Text>
+                  <Text style={{ paddingLeft: 3, fontSize: 18, fontFamily: 'sans-serif-light', color: '#fff' }}>{fromTimestampToDay(item.time)}</Text>
                   <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
 
                     {100 - Math.floor(item.precipProbability * 100) > 50 ? 
                        <View style={{ flexDirection: 'row'}}> 
-                       <Text style={{ paddingLeft: 3, fontFamily: 'sans-serif-light' }}>
+                       <Text style={{ paddingLeft: 3, fontFamily: 'sans-serif-light', color: '#fff' }}>
                          {Math.floor(100 - item.precipProbability * 100)}%</Text>
                           <Image style={{ height: 25, width: 25 }} source={require('./assets/sunny.png')} /> 
                        </View> :
                        <View style={{ flexDirection: 'row'}}> 
-                       <Text style={{ paddingLeft: 3, fontFamily: 'sans-serif-light' }}>{Math.floor(item.precipProbability * 100)}%</Text>
+                       <Text style={{ paddingLeft: 3, fontFamily: 'sans-serif-light', color: '#fff' }}>{Math.floor(item.precipProbability * 100)}%</Text>
                         <Image style={{ height: 25, width: 25 }} source={require('./assets/rain.png')} /> 
                       </View>
                     }
@@ -140,11 +144,11 @@ const App = () => {
                 <View style={{ flex: 1, justifyContent: 'space-around', marginLeft: 3 }}>
                   <View style={{ flexDirection: 'row' }}>
                     <Image style={{ height: 15, width: 15 }} source={require('./assets/up.png')} />
-                    <Text style={{ fontSize: 11, color: 'red' }}> {item.temperatureMax} C°</Text>
+                    <Text style={{ fontSize: 11, color: '#fff' }}> {Math.floor(item.temperatureMax)} C°</Text>
                   </View>
                   <View style={{ flexDirection: 'row' }}>
                     <Image style={{ height: 15, width: 15 }} source={require('./assets/down.png')} />
-                    <Text style={{ fontSize: 11, color: '#00bfff' }}> {item.temperatureMin} C°</Text>
+                    <Text style={{ fontSize: 11, color: '#fff' }}> {Math.floor(item.temperatureMin)} C°</Text>
                   </View>
                 </View>
               </View>
@@ -156,7 +160,7 @@ const App = () => {
         <View style={{ flex: 1 }}>
           {weekData[0] ? <Text>{weekData[0].summary} </Text> : false}
         </View>
-
+        </ImageBackground>
       </SafeAreaView>
     </>
   );
