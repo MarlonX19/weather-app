@@ -38,7 +38,7 @@ const App = () => {
       })
       .catch(function (error) {
         // handle error
-        console.log(error); 
+        console.log(error);
       })
   }
 
@@ -83,7 +83,7 @@ const App = () => {
   }, [])
 
   useEffect(() => {
-  
+
 
   }, [weekData])
 
@@ -97,11 +97,11 @@ const App = () => {
 
   const find = async (res) => {
     axios.get(`https://api.mapbox.com/geocoding/v5/mapbox.places/${res.description}.json?access_token=pk.eyJ1IjoibWFybG9uYmVubmV0IiwiYSI6ImNrM3o5MnY0ZDA4a3ozbHBwcDVvbGdxMzkifQ.yv0dR5O-EZe71ndYaFSTeQ&limit=1`)
-        .then(resp => {  geoCode(resp.data.features[0].center[1], resp.data.features[0].center[0])})
-        .catch(err => console.log(err))
-}
+      .then(resp => { geoCode(resp.data.features[0].center[1], resp.data.features[0].center[0]) })
+      .catch(err => console.log(err))
+  }
 
-  
+
 
   return (
     <>
@@ -118,34 +118,43 @@ const App = () => {
             showsHorizontalScrollIndicator={false}
             data={weekData}
             renderItem={({ item, index }) => (
-            <View style={{marginHorizontal: 5, height: 120, width: 120, borderColor: '#ccc', borderWidth: 0.4, borderRadius: 5 }} >
-              <View style={{ flex: 1 }}>
-                <Text style={{ paddingLeft: 3, fontSize: 18, fontFamily: 'sans-serif-light' }}>{ fromTimestampToDay(item.time) }</Text>
-                <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                  <Text style={{ paddingLeft: 3, fontFamily: 'sans-serif-light' }}>{ Math.floor(item.precipProbability * 100) }%</Text>
-                  <Image style={{ height: 25, width: 25 }} source={require('./assets/rain.png')}/>
+              <View style={{ marginHorizontal: 5, height: 120, width: 120, borderColor: '#ccc', borderWidth: 0.4, borderRadius: 5 }} >
+                <View style={{ flex: 1 }}>
+                  <Text style={{ paddingLeft: 3, fontSize: 18, fontFamily: 'sans-serif-light' }}>{fromTimestampToDay(item.time)}</Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+
+                    {100 - Math.floor(item.precipProbability * 100) > 50 ? 
+                       <View style={{ flexDirection: 'row'}}> 
+                       <Text style={{ paddingLeft: 3, fontFamily: 'sans-serif-light' }}>
+                         {Math.floor(100 - item.precipProbability * 100)}%</Text>
+                          <Image style={{ height: 25, width: 25 }} source={require('./assets/sunny.png')} /> 
+                       </View> :
+                       <View style={{ flexDirection: 'row'}}> 
+                       <Text style={{ paddingLeft: 3, fontFamily: 'sans-serif-light' }}>{Math.floor(item.precipProbability * 100)}%</Text>
+                        <Image style={{ height: 25, width: 25 }} source={require('./assets/rain.png')} /> 
+                      </View>
+                    }
+
+                  </View>
+                </View>
+                <View style={{ flex: 1, justifyContent: 'space-around', marginLeft: 3 }}>
+                  <View style={{ flexDirection: 'row' }}>
+                    <Image style={{ height: 15, width: 15 }} source={require('./assets/up.png')} />
+                    <Text style={{ fontSize: 11, color: 'red' }}> {item.temperatureMax} C°</Text>
+                  </View>
+                  <View style={{ flexDirection: 'row' }}>
+                    <Image style={{ height: 15, width: 15 }} source={require('./assets/down.png')} />
+                    <Text style={{ fontSize: 11, color: '#00bfff' }}> {item.temperatureMin} C°</Text>
+                  </View>
                 </View>
               </View>
-              <View style={{ flex: 1, justifyContent: 'space-around', marginLeft: 3 }}>
-                <View style={{ flexDirection: 'row'}}>
-                  <Image style={{ height: 15, width: 15 }} source={require('./assets/up.png')}/>
-                  <Text style={{ fontSize: 11, color: 'red' }}> {item.temperatureMax} C°</Text>
-                </View>
-                <View style={{ flexDirection: 'row'}}>
-                  <Image style={{ height: 15, width: 15 }} source={require('./assets/down.png')}/>
-                  <Text style={{ fontSize: 11, color: '#00bfff' }}> {item.temperatureMin} C°</Text>
-                </View>
-              </View>
-            </View>
             )}
             keyExtractor={item => item.time.toString()}
           />
 
         </View>
         <View style={{ flex: 1 }}>
-          { weekData[0] ? <Text>{weekData[0].summary} </Text> : false  }
-          <Text> lat {location.lat}</Text> 
-          <Text> long {location.long}</Text> 
+          {weekData[0] ? <Text>{weekData[0].summary} </Text> : false}
         </View>
 
       </SafeAreaView>
