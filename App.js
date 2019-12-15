@@ -110,10 +110,7 @@ const App = () => {
       <StatusBar barStyle="dark-content" />
       <SafeAreaView style={styles.container}>
       <ImageBackground source={img} style={{width: '100%', height: '100%'}}>
-        <View style={styles.headerView}>
-          <Search fun={find} cityName={cityName} />
-        </View>
-        <View style={{ flex: 2, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'flex-start' }}>
+        <View style={{ paddingTop: 100, flex: 2, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'flex-start' }}>
         {weekData[0] ? <Text style={{ fontSize: 32, color: '#fff', fontFamily: 'sans-serif-light', paddingLeft: 5 }}>{weekData[0].summary} </Text> : <Text>''</Text>}
         </View>
         <View style={{ flex: 2 }}>
@@ -159,6 +156,7 @@ const App = () => {
 
         </View>
         </ImageBackground>
+        <Search fun={find} cityName={cityName} />
       </SafeAreaView>
     </>
   );
