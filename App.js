@@ -26,6 +26,7 @@ import sunny from './assets/sunnyweather.jpg'
 import ordinary from './assets/ordinary.jpg'
 
 const App = () => {
+  let offset = 0;
   const [location, setLocation] = useState({});
   const [summary, setSummary] = useState('');
   const [weekData, setWeekData] = useState([]);
@@ -44,7 +45,13 @@ const App = () => {
   )
 
   function onHandlerStateChange(event) {
+    if(event.nativeEvent.oldState === State.ACTIVE){
+      const { translationY } = event.nativeEvent;
+      offset += translationY;
 
+      translateY.setOffset(offset);
+      translateY.setValue(0);
+    }
   }
 
 
