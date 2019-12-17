@@ -27,7 +27,8 @@ const Search = (props) => {
                     container: {
                         position: 'absolute',
                         top: Platform.select({ ios: 60, android: 30 }),
-                        width: '100%'
+                        width: '100%',
+                        zIndex: 6
                     },
                     textInputContainer: {
                         flex: 1,

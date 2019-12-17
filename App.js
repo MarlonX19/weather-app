@@ -15,6 +15,7 @@ import Geolocation from 'react-native-geolocation-service';
 import axios from 'axios';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { fromUnixTime } from 'date-fns'
+import MapView from 'react-native-maps';
 
 import Search from './src/components/Search';
 import Map from './src/components/Map';
@@ -45,7 +46,7 @@ const App = () => {
   )
 
   function onHandlerStateChange(event) {
-    if(event.nativeEvent.oldState === State.ACTIVE){
+    if (event.nativeEvent.oldState === State.ACTIVE) {
       const { translationY } = event.nativeEvent;
       offset += translationY;
 
@@ -136,17 +137,17 @@ const App = () => {
       <StatusBar barStyle="dark-content" />
       <SafeAreaView style={styles.container}>
         <ImageBackground source={img} style={{ width: '100%', height: '100%' }}>
-          <Animated.View style={{ opacity: translateY.interpolate({ inputRange: [-510, 0], outputRange: [0, 1]}), paddingTop: 100, flex: 2, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'flex-start' }}>
-            {weekData[0] ? <Animated.Text style={{ opacity: translateY.interpolate({ inputRange: [-300, 0], outputRange: [0, 1]}), fontSize: 32, color: '#fff', fontFamily: 'sans-serif-light', paddingLeft: 5 }}>{weekData[0].summary} </Animated.Text> : <Text>''</Text>}
+          <Animated.View style={{ opacity: translateY.interpolate({ inputRange: [-510, 0], outputRange: [0, 1] }), paddingTop: 100, flex: 2, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'flex-start' }}>
+            {weekData[0] ? <Animated.Text style={{ opacity: translateY.interpolate({ inputRange: [-300, 0], outputRange: [0, 1] }), fontSize: 32, color: '#fff', fontFamily: 'sans-serif-light', paddingLeft: 5 }}>{weekData[0].summary} </Animated.Text> : <Text>''</Text>}
           </Animated.View>
           <View style={{ flex: 2 }}>
-            <Animated.Text style={{ opacity: translateY.interpolate({ inputRange: [-300, 0], outputRange: [0, 1]}), fontSize: 24, fontFamily: 'sans-serif-light', paddingLeft: 5 }}>Resumo diário</Animated.Text>
+            <Animated.Text style={{ opacity: translateY.interpolate({ inputRange: [-300, 0], outputRange: [0, 1] }), fontSize: 24, fontFamily: 'sans-serif-light', paddingLeft: 5 }}>Resumo diário</Animated.Text>
             <FlatList
               horizontal={true}
               showsHorizontalScrollIndicator={false}
               data={weekData}
               renderItem={({ item, index }) => (
-                <Animated.View style={{ opacity: translateY.interpolate({ inputRange: [-300, 0], outputRange: [0, 1]}), marginHorizontal: 5, height: 120, width: 120, borderColor: '#ccc', borderWidth: 0.1, borderRadius: 5, backgroundColor: 'rgba(52, 52, 52, 0.4)' }} >
+                <Animated.View style={{ opacity: translateY.interpolate({ inputRange: [-300, 0], outputRange: [0, 1] }), marginHorizontal: 5, height: 120, width: 120, borderColor: '#ccc', borderWidth: 0.1, borderRadius: 5, backgroundColor: 'rgba(52, 52, 52, 0.4)' }} >
                   <View style={{ flex: 1 }}>
                     <Text style={{ paddingLeft: 3, fontSize: 18, fontFamily: 'sans-serif-light', color: '#fff' }}>{fromTimestampToDay(item.time)}</Text>
                     <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
@@ -189,14 +190,16 @@ const App = () => {
               style={[{
                 backgroundColor: '#42a5f5', borderRadius: 5, height: '100%', left: 10, right: 10, position: 'absolute', zIndex: 5, top: 600
               }, {
-                transform: [{ translateY: translateY.interpolate({
-                  inputRange: [-510, 0, 0],
-                  outputRange: [-510, 0, 0],
-                  extrapolate: 'clamp'
-                })}]
+                transform: [{
+                  translateY: translateY.interpolate({
+                    inputRange: [-510, 0, 0],
+                    outputRange: [-510, 0, 0],
+                    extrapolate: 'clamp'
+                  })
+                }]
               }]}
             >
-              <Map />
+              <Map location={location} />
             </Animated.View>
           </PanGestureHandler>
           <Search fun={find} cityName={cityName} />
