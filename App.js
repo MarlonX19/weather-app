@@ -47,11 +47,28 @@ const App = () => {
 
   function onHandlerStateChange(event) {
     if (event.nativeEvent.oldState === State.ACTIVE) {
+      let opened = false;
       const { translationY } = event.nativeEvent;
       offset += translationY;
 
-      translateY.setOffset(offset);
-      translateY.setValue(0);
+      if(translationY <= 80){
+        opened = true;
+      } else {
+        translateY.setValue(offset);
+        translateY.setOffset(0);
+        offset = 0;
+      }
+
+      Animated.timing(translateY, {
+        toValue: opened ? -510 : 0,
+        duration: 400,
+        useNativeDriver: true
+      }).start(() => {
+        offset = opened ? -510 : 0
+        translateY.setOffset(offset);
+        translateY.setValue(0);
+      });
+
     }
   }
 
@@ -192,8 +209,8 @@ const App = () => {
               }, {
                 transform: [{
                   translateY: translateY.interpolate({
-                    inputRange: [-510, 0, 0],
-                    outputRange: [-510, 0, 0],
+                    inputRange: [-510,  0],
+                    outputRange: [-510,  0],
                     extrapolate: 'clamp'
                   })
                 }]
