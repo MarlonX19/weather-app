@@ -15,7 +15,7 @@ import Geolocation from 'react-native-geolocation-service';
 import axios from 'axios';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { fromUnixTime } from 'date-fns'
-import MapView from 'react-native-maps';
+import Lottie from 'lottie-react-native';
 
 import Search from './src/components/Search';
 import Map from './src/components/Map';
@@ -26,10 +26,14 @@ import rainy from './assets/rainyweather.jpg'
 import sunny from './assets/sunnyweather.jpg'
 import ordinary from './assets/ordinary.jpg'
 
+import sunnyLottie from './src/assets/sunnyLottie.json'
+import rainyLottie from './src/assets/rainyLottie.json'
+
+
 const App = () => {
   let offset = 0;
+  const [currentlyData, setCurrentlyData] = useState({});
   const [location, setLocation] = useState({});
-  const [summary, setSummary] = useState('');
   const [weekData, setWeekData] = useState([]);
   const [cityName, setcityName] = useState('Minha região');
 
@@ -51,7 +55,7 @@ const App = () => {
       const { translationY } = event.nativeEvent;
       offset += translationY;
 
-      if(translationY <= 80){
+      if (translationY <= 80) {
         opened = true;
       } else {
         translateY.setValue(offset);
@@ -78,13 +82,13 @@ const App = () => {
     axios.get(`${DARK_SKY_URL}/${latitude},${longitude}?lang=pt&units=si`)
       .then(function (response) {
         // handle success
-        console.log(response)
+
+        setCurrentlyData(response.data.currently);
         setLocation({ 'lat': response.data.latitude, 'long': response.data.longitude })
-        let { summary } = response.data.daily;
-        setSummary(summary)
         let data = response.data.daily.data;
         setcityName(cityName)
         setWeekData(data)
+        console.log(response.data.currently)
       })
       .catch(function (error) {
         // handle error
@@ -154,11 +158,19 @@ const App = () => {
       <StatusBar barStyle="dark-content" />
       <SafeAreaView style={styles.container}>
         <ImageBackground source={img} style={{ width: '100%', height: '100%' }}>
-          <Animated.View style={{ opacity: translateY.interpolate({ inputRange: [-510, 0], outputRange: [0, 1] }), paddingTop: 100, flex: 2, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'flex-start' }}>
-            {weekData[0] ? <Animated.Text style={{ opacity: translateY.interpolate({ inputRange: [-300, 0], outputRange: [0, 1] }), fontSize: 32, color: '#fff', fontFamily: 'sans-serif-light', paddingLeft: 5 }}>{weekData[0].summary} </Animated.Text> : <Text>''</Text>}
+          <Animated.View style={{ opacity: translateY.interpolate({ inputRange: [-510, 0], outputRange: [0, 1] }), paddingTop: 100, flex: 1, alignItems: 'flex-start', justifyContent: 'flex-start' }}>
+            <Animated.View style={{ flex: 1, flexDirection: 'row', backgroundColor: 'rgba(52, 52, 52, 0.4)', borderRadius: 5, marginHorizontal: 4 }}>
+              <Animated.View style={{ flex: 1}}>
+                {currentlyData ? <Animated.Text style={{ opacity: translateY.interpolate({ inputRange: [-300, 0], outputRange: [0, 1] }), fontSize: 35, color: '#fff', fontFamily: 'sans-serif-light', paddingLeft: 5, fontWeight: '600' }}>{currentlyData.summary} </Animated.Text> : <Text>''</Text>}
+                {currentlyData ? <Animated.Text style={{ opacity: translateY.interpolate({ inputRange: [-300, 0], outputRange: [0, 1] }), fontSize: 55, color: '#fff', fontFamily: 'sans-serif-light', paddingLeft: 5, fontWeight: '600' }}>{Math.floor(currentlyData.temperature)} Cº </Animated.Text> : <Text>''</Text>}
+              </Animated.View>
+              <Animated.View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'flex-start'}}>
+                <Lottie style={{ width: 150, height: 150 }} autoPlay loop source={rainyLottie} />
+              </Animated.View>
+            </Animated.View>
           </Animated.View>
           <View style={{ flex: 2 }}>
-            <Animated.Text style={{ opacity: translateY.interpolate({ inputRange: [-300, 0], outputRange: [0, 1] }), fontSize: 24, fontFamily: 'sans-serif-light', paddingLeft: 5 }}>Resumo diário</Animated.Text>
+            <Animated.Text style={{ opacity: translateY.interpolate({ inputRange: [-300, 0], outputRange: [0, 1] }), color: '#fff', fontSize: 24, fontFamily: 'sans-serif-light', paddingLeft: 5 }}>Próximos dias</Animated.Text>
             <FlatList
               horizontal={true}
               showsHorizontalScrollIndicator={false}
@@ -173,11 +185,11 @@ const App = () => {
                         <View style={{ flexDirection: 'row' }}>
                           <Text style={{ paddingLeft: 3, fontFamily: 'sans-serif-light', color: '#fff' }}>
                             {Math.floor(100 - item.precipProbability * 100)}%</Text>
-                          <Image style={{ height: 25, width: 25 }} source={require('./assets/sunny.png')} />
+                          <Lottie style={{ width: 25, height: 25 }} autoPlay loop source={sunnyLottie} />
                         </View> :
                         <View style={{ flexDirection: 'row' }}>
                           <Text style={{ paddingLeft: 3, fontFamily: 'sans-serif-light', color: '#fff' }}>{Math.floor(item.precipProbability * 100)}%</Text>
-                          <Image style={{ height: 25, width: 25 }} source={require('./assets/rain.png')} />
+                          <Lottie style={{ width: 25, height: 25 }} autoPlay loop source={rainyLottie} />
                         </View>
                       }
 
@@ -209,8 +221,8 @@ const App = () => {
               }, {
                 transform: [{
                   translateY: translateY.interpolate({
-                    inputRange: [-510,  0],
-                    outputRange: [-510,  0],
+                    inputRange: [-510, 0],
+                    outputRange: [-510, 0],
                     extrapolate: 'clamp'
                   })
                 }]
