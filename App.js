@@ -9,7 +9,8 @@ import {
   FlatList,
   Image,
   ImageBackground,
-  Animated
+  Animated,
+  ActivityIndicator
 } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import axios from 'axios';
@@ -27,7 +28,11 @@ import sunny from './assets/sunnyweather.jpg'
 import ordinary from './assets/ordinary.jpg'
 
 import sunnyLottie from './src/assets/sunnyLottie.json'
+import sunLottie from './src/assets/sunLottie.json'
 import rainyLottie from './src/assets/rainyLottie.json'
+import snowLottie from './src/assets/snowLottie.json'
+import cloudyLottie from './src/assets/cloudyLottie.json'
+import weatherLottie from './src/assets/weatherLottie.json'
 
 
 const App = () => {
@@ -35,7 +40,7 @@ const App = () => {
   const [currentlyData, setCurrentlyData] = useState({});
   const [location, setLocation] = useState({});
   const [weekData, setWeekData] = useState([]);
-  const [cityName, setcityName] = useState('Minha região');
+  const [cityName, setCityName] = useState('Minha região');
 
   const translateY = new Animated.Value(0);
   const animatedEvent = Animated.event(
@@ -84,7 +89,7 @@ const App = () => {
         setCurrentlyData(response.data.currently);
         setLocation({ 'lat': response.data.latitude, 'long': response.data.longitude })
         let data = response.data.daily.data;
-        setcityName(cityName)
+        setCityName(cityName)
         setWeekData(data)
         console.log(response.data.currently)
       })
@@ -93,7 +98,7 @@ const App = () => {
       })
   }
 
- async function getLocation() {
+  async function getLocation() {
     try {
       const granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
@@ -127,7 +132,7 @@ const App = () => {
     }
   }
 
-  useEffect(() => {  
+  useEffect(() => {
     getLocation()
 
   }, [])
@@ -149,6 +154,30 @@ const App = () => {
 
   const img = weekData[0] ? weekData[0].icon === 'rain' ? rainy : sunny : ordinary
 
+  const handleLottieIcon = () => {
+    let summary = currentlyData.summary.toLowerCase();
+
+    if (summary.includes('sol') || summary.includes('limpo')) {
+      return <Lottie style={{ width: 150, height: 150 }} autoPlay loop source={sunnyLottie} />
+    }
+    else if (summary.includes('neve')) {
+      return <Lottie style={{ width: 150, height: 150 }} autoPlay loop source={snowLottie} />
+    }
+
+    else if (summary.includes('chuva') || summary.includes('chuviscos') || summary.includes('tempestade')) {
+      return <Lottie style={{ width: 150, height: 150 }} autoPlay loop source={rainyLottie} />
+    }
+
+    else if (summary.includes('nublado') || summary.includes('núvens')) {
+      return <Lottie style={{ width: 150, height: 150 }} autoPlay loop source={cloudyLottie} />
+    }
+
+    else {
+       return <Lottie style={{ width: 150, height: 150 }} autoPlay loop source={weatherLottie} />
+    }
+
+  }
+
   return (
     <>
       <StatusBar barStyle="dark-content" />
@@ -160,9 +189,11 @@ const App = () => {
                 {currentlyData ? <Animated.Text style={[styles.summaryText, { opacity: translateY.interpolate({ inputRange: [-300, 0], outputRange: [0, 1] }) }]}>{currentlyData.summary} </Animated.Text> : <Text>''</Text>}
                 {currentlyData.temperature ? <Animated.Text style={[styles.summaryText, { opacity: translateY.interpolate({ inputRange: [-300, 0], outputRange: [0, 1] }), fontSize: 55 }]}>{Math.floor(currentlyData.temperature)} Cº </Animated.Text> : <Text>''</Text>}
               </Animated.View>
-              <Animated.View style={styles.summaryLottieView}>
-                <Lottie style={{ width: 150, height: 150 }} autoPlay loop source={rainyLottie} />
-              </Animated.View>
+              {currentlyData.summary ?
+                <Animated.View style={styles.summaryLottieView}>
+                  {handleLottieIcon()}
+                </Animated.View> : <ActivityIndicator size='large' />}
+
             </Animated.View>
           </Animated.View>
           <View>
@@ -180,14 +211,13 @@ const App = () => {
                         <View style={{ flexDirection: 'row' }}>
                           <Text style={styles.forcastPrecipText}>
                             {Math.floor(100 - item.precipProbability * 100)}%</Text>
-                          <Lottie style={{ width: 25, height: 25 }} autoPlay loop source={sunnyLottie} />
+                          <Lottie style={{ width: 25, height: 25 }} autoPlay loop source={sunLottie} />
                         </View> :
                         <View style={{ flexDirection: 'row' }}>
                           <Text style={styles.forcastPrecipText}>{Math.floor(item.precipProbability * 100)}%</Text>
                           <Lottie style={{ width: 25, height: 25 }} autoPlay loop source={rainyLottie} />
                         </View>
                       }
-
                     </View>
                   </View>
                   <View style={styles.forcastTemperature}>
@@ -204,14 +234,13 @@ const App = () => {
               )}
               keyExtractor={item => item.time.toString()}
             />
-
           </View>
           <PanGestureHandler
             onGestureEvent={animatedEvent}
             onHandlerStateChange={onHandlerStateChange}
           >
             <Animated.View
-              style={[ styles.AnimatedMapView, {
+              style={[styles.AnimatedMapView, {
                 transform: [{
                   translateY: translateY.interpolate({
                     inputRange: [-510, 0],
