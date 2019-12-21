@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { View, Image } from 'react-native';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 
@@ -7,9 +6,9 @@ const Search = (props) => {
    const [isSearchFocused, setIsSearchFocused] = useState(false);
 
         return  <GooglePlacesAutocomplete
-                placeholder={props.cityName}
+                placeholder={isSearchFocused ? '' : props.cityName}
                 placeholderTextColor="#333"
-                onPress={(res) => props.fun(res)}
+                onPress={(res) => props.handleLocationSearch(res)}
                 query={{
                     key: 'AIzaSyBhAwIwcJLk10RVN1eQIWGiESlcZZnFjcE',
                     language: 'pt'

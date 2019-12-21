@@ -81,8 +81,6 @@ const App = () => {
   const geoCode = async (latitude, longitude, cityName) => {
     axios.get(`${DARK_SKY_URL}/${latitude},${longitude}?lang=pt&units=si`)
       .then(function (response) {
-        // handle success
-
         setCurrentlyData(response.data.currently);
         setLocation({ 'lat': response.data.latitude, 'long': response.data.longitude })
         let data = response.data.daily.data;
@@ -91,12 +89,11 @@ const App = () => {
         console.log(response.data.currently)
       })
       .catch(function (error) {
-        // handle error
         console.log(error);
       })
   }
 
-  const getLocation = async () => {
+ async function getLocation() {
     try {
       const granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
@@ -116,7 +113,6 @@ const App = () => {
             geoCode(latitude, longitude, cityName)
           },
           (error) => {
-            // See error code charts below.
             console.log(error.code, error.message);
           },
           { enableHighAccuracy: true, timeout: 5000, maximumAge: 10000 }
@@ -131,7 +127,7 @@ const App = () => {
     }
   }
 
-  useEffect(() => {
+  useEffect(() => {  
     getLocation()
 
   }, [])
@@ -145,7 +141,7 @@ const App = () => {
     return finalres;
   }
 
-  const find = async (res) => {
+  const handleLocationSearch = async (res) => {
     axios.get(`https://api.mapbox.com/geocoding/v5/mapbox.places/${res.description}.json?access_token=pk.eyJ1IjoibWFybG9uYmVubmV0IiwiYSI6ImNrM3o5MnY0ZDA4a3ozbHBwcDVvbGdxMzkifQ.yv0dR5O-EZe71ndYaFSTeQ&limit=1`)
       .then(resp => { geoCode(resp.data.features[0].center[1], resp.data.features[0].center[0], resp.data.features[0].text) })
       .catch(err => console.log(err))
@@ -158,51 +154,50 @@ const App = () => {
       <StatusBar barStyle="dark-content" />
       <SafeAreaView style={styles.container}>
         <ImageBackground source={img} style={{ width: '100%', height: '100%' }}>
-          <Animated.View style={{ opacity: translateY.interpolate({ inputRange: [-510, 0], outputRange: [0, 1] }), paddingTop: 100, flex: 1, alignItems: 'flex-start', justifyContent: 'flex-start' }}>
-            <Animated.View style={{ flex: 1, flexDirection: 'row', backgroundColor: 'rgba(52, 52, 52, 0.4)', borderRadius: 5, marginHorizontal: 4 }}>
-              <Animated.View style={{ flex: 1}}>
-                {currentlyData ? <Animated.Text style={{ opacity: translateY.interpolate({ inputRange: [-300, 0], outputRange: [0, 1] }), fontSize: 35, color: '#fff', fontFamily: 'sans-serif-light', paddingLeft: 5, fontWeight: '600' }}>{currentlyData.summary} </Animated.Text> : <Text>''</Text>}
-                {currentlyData ? <Animated.Text style={{ opacity: translateY.interpolate({ inputRange: [-300, 0], outputRange: [0, 1] }), fontSize: 55, color: '#fff', fontFamily: 'sans-serif-light', paddingLeft: 5, fontWeight: '600' }}>{Math.floor(currentlyData.temperature)} Cº </Animated.Text> : <Text>''</Text>}
+          <Animated.View style={[styles.currentInfoView, { opacity: translateY.interpolate({ inputRange: [-510, 0], outputRange: [0, 1] }) }]}>
+            <Animated.View style={[styles.summaryView, { opacity: translateY.interpolate({ inputRange: [-510, 0], outputRange: [0, 1] }) }]}>
+              <Animated.View style={{ flex: 1 }}>
+                {currentlyData ? <Animated.Text style={[styles.summaryText, { opacity: translateY.interpolate({ inputRange: [-300, 0], outputRange: [0, 1] }) }]}>{currentlyData.summary} </Animated.Text> : <Text>''</Text>}
+                {currentlyData.temperature ? <Animated.Text style={[styles.summaryText, { opacity: translateY.interpolate({ inputRange: [-300, 0], outputRange: [0, 1] }), fontSize: 55 }]}>{Math.floor(currentlyData.temperature)} Cº </Animated.Text> : <Text>''</Text>}
               </Animated.View>
-              <Animated.View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'flex-start'}}>
+              <Animated.View style={styles.summaryLottieView}>
                 <Lottie style={{ width: 150, height: 150 }} autoPlay loop source={rainyLottie} />
               </Animated.View>
             </Animated.View>
           </Animated.View>
-          <View style={{ flex: 2 }}>
+          <View>
             <Animated.Text style={{ opacity: translateY.interpolate({ inputRange: [-300, 0], outputRange: [0, 1] }), color: '#fff', fontSize: 24, fontFamily: 'sans-serif-light', paddingLeft: 5 }}>Próximos dias</Animated.Text>
             <FlatList
               horizontal={true}
               showsHorizontalScrollIndicator={false}
               data={weekData}
               renderItem={({ item, index }) => (
-                <Animated.View style={{ opacity: translateY.interpolate({ inputRange: [-300, 0], outputRange: [0, 1] }), marginHorizontal: 5, height: 120, width: 120, borderColor: '#ccc', borderWidth: 0.1, borderRadius: 5, backgroundColor: 'rgba(52, 52, 52, 0.4)' }} >
+                <Animated.View style={[styles.forcastView, { opacity: translateY.interpolate({ inputRange: [-300, 0], outputRange: [0, 1] }) }]} >
                   <View style={{ flex: 1 }}>
-                    <Text style={{ paddingLeft: 3, fontSize: 18, fontFamily: 'sans-serif-light', color: '#fff' }}>{fromTimestampToDay(item.time)}</Text>
-                    <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-
+                    <Text style={styles.forcastDay}>{fromTimestampToDay(item.time)}</Text>
+                    <View style={styles.forcastPrecip}>
                       {100 - Math.floor(item.precipProbability * 100) > 50 ?
                         <View style={{ flexDirection: 'row' }}>
-                          <Text style={{ paddingLeft: 3, fontFamily: 'sans-serif-light', color: '#fff' }}>
+                          <Text style={styles.forcastPrecipText}>
                             {Math.floor(100 - item.precipProbability * 100)}%</Text>
                           <Lottie style={{ width: 25, height: 25 }} autoPlay loop source={sunnyLottie} />
                         </View> :
                         <View style={{ flexDirection: 'row' }}>
-                          <Text style={{ paddingLeft: 3, fontFamily: 'sans-serif-light', color: '#fff' }}>{Math.floor(item.precipProbability * 100)}%</Text>
+                          <Text style={styles.forcastPrecipText}>{Math.floor(item.precipProbability * 100)}%</Text>
                           <Lottie style={{ width: 25, height: 25 }} autoPlay loop source={rainyLottie} />
                         </View>
                       }
 
                     </View>
                   </View>
-                  <View style={{ flex: 1, justifyContent: 'space-around', marginLeft: 3 }}>
+                  <View style={styles.forcastTemperature}>
                     <View style={{ flexDirection: 'row' }}>
                       <Image style={{ height: 15, width: 15 }} source={require('./assets/up.png')} />
-                      <Text style={{ fontSize: 11, color: '#fff' }}> {Math.floor(item.temperatureMax)} C°</Text>
+                      <Text style={styles.forcastTemperatureText}> {Math.floor(item.temperatureMax)} C°</Text>
                     </View>
                     <View style={{ flexDirection: 'row' }}>
                       <Image style={{ height: 15, width: 15 }} source={require('./assets/down.png')} />
-                      <Text style={{ fontSize: 11, color: '#fff' }}> {Math.floor(item.temperatureMin)} C°</Text>
+                      <Text style={styles.forcastTemperatureText}> {Math.floor(item.temperatureMin)} C°</Text>
                     </View>
                   </View>
                 </Animated.View>
@@ -216,9 +211,7 @@ const App = () => {
             onHandlerStateChange={onHandlerStateChange}
           >
             <Animated.View
-              style={[{
-                backgroundColor: '#42a5f5', borderRadius: 5, height: '100%', left: 10, right: 10, position: 'absolute', zIndex: 5, top: 600
-              }, {
+              style={[ styles.AnimatedMapView, {
                 transform: [{
                   translateY: translateY.interpolate({
                     inputRange: [-510, 0],
@@ -231,7 +224,7 @@ const App = () => {
               <Map location={location} />
             </Animated.View>
           </PanGestureHandler>
-          <Search fun={find} cityName={cityName} />
+          <Search handleLocationSearch={handleLocationSearch} cityName={cityName} />
         </ImageBackground>
       </SafeAreaView>
     </>
@@ -252,5 +245,82 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
     margin: 5
+  },
+
+  currentInfoView: {
+    marginTop: 100,
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start'
+  },
+
+  summaryView: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(52, 52, 52, 0.4)',
+    borderRadius: 5,
+    marginHorizontal: 4
+  },
+
+  summaryLottieView: {
+    flex: 1, flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'flex-start'
+  },
+
+  summaryText: {
+    fontSize: 35,
+    color: '#fff',
+    fontFamily: 'sans-serif-light',
+    paddingLeft: 5,
+    fontWeight: '600'
+  },
+
+  forcastView: {
+    marginHorizontal: 5,
+    height: 120,
+    width: 120, borderColor: '#ccc',
+    borderWidth: 0.1,
+    borderRadius: 5,
+    backgroundColor: 'rgba(52, 52, 52, 0.4)'
+  },
+
+  forcastDay: {
+    paddingLeft: 3,
+    fontSize: 18,
+    fontFamily: 'sans-serif-light',
+    color: '#fff'
+  },
+
+  forcastPrecip: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+
+  forcastPrecipText: {
+    paddingLeft: 3,
+    fontFamily: 'sans-serif-light',
+    color: '#fff'
+  },
+
+  forcastTemperature: {
+    flex: 1,
+    justifyContent: 'space-around',
+    marginLeft: 3
+  },
+
+  forcastTemperatureText: {
+    fontSize: 11,
+    color: '#fff'
+  },
+
+  AnimatedMapView: {
+    backgroundColor: '#42a5f5',
+    borderRadius: 5,
+    height: '100%',
+    left: 10,
+    right: 10,
+    position: 'absolute',
+    zIndex: 5,
+    top: 600
   }
 });
