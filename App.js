@@ -17,9 +17,11 @@ import axios from 'axios';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { fromUnixTime } from 'date-fns'
 import Lottie from 'lottie-react-native';
+import firebase from 'firebase';
 
 import Search from './src/components/Search';
 import Map from './src/components/Map';
+import { firebaseConfig } from './config/firebase';
 
 
 import { DARK_SKY_URL } from './config/consts';
@@ -135,6 +137,8 @@ const App = () => {
   useEffect(() => {
     getLocation()
 
+    firebase.initializeApp(firebaseConfig);
+
   }, [])
 
 
@@ -173,7 +177,7 @@ const App = () => {
     }
 
     else {
-       return <Lottie style={{ width: 150, height: 150 }} autoPlay loop source={weatherLottie} />
+      return <Lottie style={{ width: 150, height: 150 }} autoPlay loop source={weatherLottie} />
     }
 
   }
