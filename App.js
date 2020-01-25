@@ -135,9 +135,8 @@ const App = () => {
   }
 
   useEffect(() => {
-    getLocation()
-
     firebase.initializeApp(firebaseConfig);
+    getLocation()
 
   }, [])
 

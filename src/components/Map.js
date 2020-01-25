@@ -13,6 +13,7 @@ export default function Map(props) {
     const [title, setTitle] = useState('');
     const [desc, setDesc] = useState('');
     const [photoSelected, setPhotoSelected] = useState(false);
+    const [data, setData] = useState([]);
 
 
 
@@ -75,7 +76,7 @@ export default function Map(props) {
             longitude: longi
         }
 
-        firebase.database().ref('/photos/').set(photoObj)
+        firebase.database().ref('/photos/').push(photoObj)
 
         Alert.alert(
             'Photo uploaded',
@@ -88,6 +89,7 @@ export default function Map(props) {
 
         setPhotoSelected(false)
         setImgUri('')
+        fetchData()
     }
 
     const uploadFromCamera = () => {
@@ -102,26 +104,37 @@ export default function Map(props) {
 
     let { lat, long } = props.location;
 
+    const fetchData = () => {
+        let vals = []
+        firebase.database().ref('photos/').once('value').then(function (snapshot) {
+
+            for (var item in snapshot.val()) {
+                vals.push(snapshot.val()[item])
+            }
+
+            setData(vals)
+        }).catch(error => console.log(error))
+    }
+
+
 
     return (
         <Animated.View style={styles.container}>
             <View style={styles.header}>
-                <View style={{ flex: 1.5, justifyContent: 'center', alignItems: 'flex-end' }}>
-                    <TouchableOpacity
-                        onPress={() => uploadFromGallery()}
-                        style={{ backgroundColor: 'red ' }}
-                    >
-                        <Text>Tirar foto</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.headerText}>Explorar mapa</Text>
-                </View>
-                <View style={{ flex: 0.5, justifyContent: 'center', alignItems: 'center', marginLeft: 40 }}>
-                    <TouchableOpacity
-                        onPress={() => handleUpload()}
-                    >
-                        <Text>Subit</Text>
-                    </TouchableOpacity>
-                </View>
+                <TouchableOpacity
+                    onPress={() => uploadFromGallery()}
+                    style={{ backgroundColor: 'green', borderRadius: 3, padding: 5 }}
+                >
+                    <Text style={{ color: '#fff' }}>Tirar foto</Text>
+                </TouchableOpacity>
+                <Text style={styles.headerText}>Explorar mapa</Text>
+                <TouchableOpacity
+                    disabled={!photoSelected}
+                    onPress={() => handleUpload()}
+                    style={{ backgroundColor: photoSelected == true ? 'green' : 'grey', borderRadius: 3, padding: 5 }}
+                >
+                    <Text style={{ color: '#fff' }}>Publicar</Text>
+                </TouchableOpacity>
             </View>
             {photoSelected == true ? (
                 <View style={{ backgroundColor: '#fff', flex: 9, padding: 10 }}>
@@ -151,29 +164,31 @@ export default function Map(props) {
                     <MapView
                         style={styles.mapview}
                         region={{
-                            latitude: lat ? lat : -22.3353565,
-                            longitude: long ? long : -47.4695278,
+                            latitude: data.latitude ? data.latitude : -22.3353565,
+                            longitude: data.longitude ? data.longitude : -47.4695278,
                             latitudeDelta: 0.0243,
                             longitudeDelta: 0.0234
                         }}
                         showsUserLocation
                         loadingEnabled
                     >
-                        <Marker
-                            coordinate={{
-                                latitude: lat ? lat : -22.3353565,
-                                longitude: long ? long : -47.4695278,
-                            }
-                            }
-                            title='Rua alagada'
-                            description='9impossível passar de carro'
-                            anchor={{ x: 0, y: 0 }}
-                            onPress={() => { }}
-                        >
-                            <View>
-                                <Image style={{ width: 50, height: 50, borderRadius: 50, borderWidth: 0.5, borderColor: 'purple' }} source={test} />
-                            </View>
-                        </Marker>
+                        {data.map(x =>
+                            <Marker
+                                coordinate={{
+                                    latitude: x.latitude ? x.latitude : -22.3353565,
+                                    longitude: x.longitude ? x.longitude : -47.4695278,
+                                }
+                                }
+                                title={x.caption}
+                                description={x.tit}
+                                anchor={{ x: 0, y: 0 }}
+                                onPress={() => { }}
+                            >
+                                <View>
+                                    <Image style={{ width: 50, height: 50, borderRadius: 50, borderWidth: 0.5, borderColor: 'purple' }} source={{ uri: x.url }} />
+                                </View>
+                            </Marker>
+                        )}
                     </MapView>
                 )}
 
@@ -189,13 +204,14 @@ const styles = StyleSheet.create({
     },
 
     header: {
-        flex: 1,
+        height: 60,
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'space-evenly',
         alignItems: 'center',
     },
 
     headerText: {
+        fontWeight: 'bold',
         fontSize: 20,
         color: '#fff',
         fontFamily: 'sans-serif-light',
