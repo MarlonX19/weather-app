@@ -111,30 +111,39 @@ export default function Map(props) {
             for (var item in snapshot.val()) {
                 vals.push(snapshot.val()[item])
             }
-
             setData(vals)
         }).catch(error => console.log(error))
     }
+
+    useEffect(() => {
+        setData(props.mapdata)
+    })
 
 
 
     return (
         <Animated.View style={styles.container}>
             <View style={styles.header}>
-                <TouchableOpacity
-                    onPress={() => uploadFromGallery()}
-                    style={{ backgroundColor: 'green', borderRadius: 3, padding: 5 }}
-                >
-                    <Text style={{ color: '#fff' }}>Tirar foto</Text>
-                </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => uploadFromGallery()}
+                        style={{ padding: 5, flex: 1 }}
+                    >
+                        <Text style={{ color: '#fff', textAlign: 'center' }}>Tirar foto</Text>
+                    </TouchableOpacity> 
                 <Text style={styles.headerText}>Explorar mapa</Text>
-                <TouchableOpacity
-                    disabled={!photoSelected}
-                    onPress={() => handleUpload()}
-                    style={{ backgroundColor: photoSelected == true ? 'green' : 'grey', borderRadius: 3, padding: 5 }}
-                >
-                    <Text style={{ color: '#fff' }}>Publicar</Text>
-                </TouchableOpacity>
+                {photoSelected == true ? (
+                    <TouchableOpacity
+                        disabled={!photoSelected}
+                        onPress={() => handleUpload()}
+                        style={{ flex: 1 }}
+                    >
+                        <Text style={{ color: '#fff', textAlign: 'center' }}>Publicar</Text>
+                    </TouchableOpacity>
+                ) : (
+                        <View style={{ flex: 1 }}>
+                        </View>
+                    )}
+
             </View>
             {photoSelected == true ? (
                 <View style={{ backgroundColor: '#fff', flex: 9, padding: 10 }}>
@@ -206,11 +215,12 @@ const styles = StyleSheet.create({
     header: {
         height: 60,
         flexDirection: 'row',
-        justifyContent: 'space-evenly',
+        justifyContent: 'space-between',
         alignItems: 'center',
     },
 
     headerText: {
+        flex: 1,
         fontWeight: 'bold',
         fontSize: 20,
         color: '#fff',

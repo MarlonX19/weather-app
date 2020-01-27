@@ -43,6 +43,20 @@ const App = () => {
   const [location, setLocation] = useState({});
   const [weekData, setWeekData] = useState([]);
   const [cityName, setCityName] = useState('Minha região');
+  const [mapdata, setMapdata] = useState([]);
+
+
+  const fetchData = () => {
+    let vals = []
+    firebase.database().ref('photos/').once('value').then(function (snapshot) {
+
+        for (var item in snapshot.val()) {
+            vals.push(snapshot.val()[item])
+        }
+
+        setMapdata(vals)
+    }).catch(error => console.log(error))
+}
 
   const translateY = new Animated.Value(0);
   const animatedEvent = Animated.event(
@@ -134,11 +148,15 @@ const App = () => {
     }
   }
 
-  useEffect(() => {
+  useEffect( () => {
     firebase.initializeApp(firebaseConfig);
     getLocation()
 
   }, [])
+
+  useEffect(() => {
+    fetchData();
+  }, [weekData])
 
 
   const fromTimestampToDay = (timestamp) => {
@@ -253,7 +271,7 @@ const App = () => {
                 }]
               }]}
             >
-              <Map location={location} />
+              <Map mapdata={mapdata} location={location} />
             </Animated.View>
           </PanGestureHandler>
           <Search handleLocationSearch={handleLocationSearch} cityName={cityName} />
